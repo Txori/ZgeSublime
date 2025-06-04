@@ -21,7 +21,7 @@ class ZgeRunProjectCommand(sublime_plugin.TextCommand):
         exe_path = os.path.splitext(project_path)[0] + ".exe"
 
         # Load path from settings
-        settings = sublime.load_settings("ZGameEditor.sublime-settings")
+        settings = sublime.load_settings("ZgeSublime.sublime-settings")
         zge_editor = settings.get("zge_editor_path", "")
 
         # Display error message if ZGameEditor.exe isn't found
