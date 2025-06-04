@@ -1,0 +1,6 @@
+[
+    {
+        "keys": ["ctrl+enter"],
+        "command": "zge_run_project"
+    }
+]
