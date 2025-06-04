@@ -16,9 +16,9 @@ Default path: `C:/Dropbox/System/ZGameEditor/ZGameEditor.exe`
 ## Usage
 
 Open your `.zgeproj` file in Sublime Text.  
-Right-click in the editor to open the context menu and choose:
+Right-click in the editor to open the context menu and choose **ZGameEditor**:
 
-- **ZGameEditor / Run project**  
+- **Run project**  
 This saves the file, then builds and runs your project.  
 You can also press `Ctrl+Enter` to run the same command.
 
