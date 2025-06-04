@@ -1,0 +1,11 @@
+[
+    {
+        "caption": "ZGameEditor",
+        "children": [
+            {
+                "caption": "Run Project",
+                "command": "zge_run_project"
+            }
+        ]
+    }
+]
