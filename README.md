@@ -13,6 +13,20 @@ Edit the `ZgeSublime.sublime-settings` file and set the path to your `ZGameEdito
 
 Default path: `C:/Dropbox/System/ZGameEditor/ZGameEditor.exe`
 
+## Syntax Highlighting
+
+The plugin includes custom syntax highlighting for `.zgeproj` files:
+
+- XML structure is styled similarly to PHP to de-emphasize markup
+- ZExpression sections (`<Expression>`, `<WhileExp>`, etc.) use C#-like coloring
+- Data sections (`<BitmapFile>`, `<MeshData>`) appear in grey for minimal visibility
+
+The syntax should activate automatically when opening `.zgeproj` files. If it doesn't:
+
+1. Open a `.zgeproj` file
+2. Click the current syntax name in the bottom-right status bar (or use `Ctrl+Shift+P`)
+3. Select "ZGameEditor" from the list
+
 ## Usage
 
 Open your `.zgeproj` file in Sublime Text.  
