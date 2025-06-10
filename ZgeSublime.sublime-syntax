@@ -1,0 +1,193 @@
+%YAML 1.2
+---
+name: ZGameEditor
+file_extensions: [zgeproj]
+scope: text.xml.zgeproj
+
+contexts:
+
+  main:
+
+    - match: '<(BeforeInitExp|Expression|TextExpression|Source|WhileExp)>'
+      push: zgecode
+      scope: entity.name.tag.xml
+
+    - match: '<VertexShaderSource>'
+      push: vertexshader
+      scope: entity.name.tag.xml
+
+    - match: '<Comment>'
+      push: text
+      scope: entity.name.tag.xml
+
+    - match: '<BitmapFile>|<Icon>|<MeshData>'
+      push: data
+      scope: entity.name.tag.xml
+
+    - match: '<\?xml|\?>'
+      scope: punctuation.definition.tag.xml
+
+    - include: scope:source.php # Better than text.xml because less visible
+
+
+  zgecode:
+    
+    - match: '<!\[CDATA\['
+      push: zgecode_content
+      scope: punctuation.definition.cdata.xml
+    
+    - match: '</(BeforeInitExp|Expression|TextExpression|Source|WhileExp)>'
+      pop: true
+      scope: entity.name.tag.xml
+
+  zgecode_content:
+
+    # End of CDATA
+    - match: '(?://.*?)?(\]\]>)'
+      scope: punctuation.definition.cdata.xml
+      pop: true
+
+    # Single-line comments (gray)
+    - match: '(//).*'
+      captures:
+        1: punctuation.definition.comment.csharp
+      scope: comment.line.double-slash.csharp
+
+    # Multi-line comments (gray)
+    - match: '/\*'
+      push: csharp_multiline_comment
+      scope: punctuation.definition.comment.csharp
+
+    # Orange numeric literals (all types)
+    - match: '\b\d+(\.\d+)?([ul]?[df]?f?)\b'
+      scope: constant.numeric.csharp
+
+    - match: '\b(const|inline|override|private|virtual)\b'
+      scope: storage.modifier
+
+    # 'this' keyword
+    - match: \bthis\b
+      scope: variable.language.this.csharp
+
+    # Class declaration
+    - match: '\b(class)\s+(\w+)'
+      captures:
+        1: storage.modifier
+        2: entity.name.type.class.csharp
+
+    # Gray semicolons at end of lines
+    - match: ';\s*$'
+      scope: punctuation.terminator.statement.gray
+
+    # Function declarations
+    - match: '\b(byte|float|int|mat4|model|string|vec[234]|void|xptr)\s+(\w+)\s*\('
+      captures:
+        1: storage.type                # Return type (purple)
+        2: entity.name.function.csharp # Function name (green)
+        3: meta.function.parameters    # Parameter list
+      push: function_parameters
+
+    # Function calls (matches names before '(')
+    - match: '(\w+)(?=\s*\()'
+      scope: support.function
+      # Only color if it's not a keyword/type
+      unless: '\b(if|while|return|byte|float|int|mat4|model|string|vec[234]|void|xptr)\b'
+
+    # Color storage.type in purple inside expression
+    - match: '\b(byte|float|int|mat4|model|string|vec[234]|void|xptr)\b'
+      scope: storage.type
+
+    # Comparison operators
+    - match: '(==|!=|>=|<=|>|<)'
+      scope: keyword.operator.comparison.csharp
+
+    # Assignment Operators
+    - match: '(\+|-|\*|/|%|=|\+=|-=|\*=|/=|%=|\+\+|--|\?|:)'
+      scope: keyword.operator.arithmetic.csharp
+
+    # Logical operators
+    - match: '(&&|\|\||!)'
+      scope: keyword.operator.logical.csharp
+
+    # Explicitly scope 'return' (overrides any included syntax)
+    - match: '\breturn\b'
+      scope: keyword.control.flow.return.csharp
+
+    # Color strings (including quotes) in green
+    - match: '".*?"'
+      scope: string.quoted.double.csharp
+
+
+  csharp_multiline_comment:
+    - match: '\*/'
+      pop: true
+      scope: punctuation.definition.comment.csharp
+    - match: '[^\*]+|\*(?!/)'
+      scope: comment.block.csharp
+
+
+  function_parameters:
+    - match: '\b(byte|float|int|mat4|model|string|vec[234]|void|xptr)\s+(\w+)\b'
+      captures:
+        1: storage.type                 # Parameter type (purple)
+        2: variable.parameter.csharp    # Parameter name (light orange)
+    - match: '\)'
+      pop: true
+
+
+  vertexshader:
+
+    - match: '<!\[CDATA\['
+      push: vertexshader_content
+      scope: punctuation.definition.cdata.xml
+    
+    - match: '</VertexShaderSource>'
+      pop: true
+      scope: entity.name.tag.xml
+
+  vertexshader_content:
+
+    - match: '(?://.*?)?(\]\]>)'
+      scope: punctuation.definition.cdata.xml
+      pop: true
+
+    - include: scope:source.c
+
+
+  text:
+    
+    - match: '<!\[CDATA\['
+      push: text_content
+      scope: punctuation.definition.cdata.xml
+    
+    - match: '</Comment>'
+      pop: true
+      scope: entity.name.tag.xml
+
+  text_content:
+
+    - match: '(?://.*?)?(\]\]>)'
+      scope: punctuation.definition.cdata.xml
+      pop: true
+
+    - include: scope:source.txt
+
+
+  data:
+
+    - match: '<!\[CDATA\['
+      push: data_content
+      scope: punctuation.definition.cdata.xml
+    
+    - match: '</(BitmapFile|Icon|MeshData)>'
+      pop: true
+      scope: entity.name.tag.xml
+
+  data_content:
+
+    - match: '\]\]>'
+      scope: punctuation.definition.cdata.xml
+      pop: true
+
+    - match: '.'
+      scope: comment.line
