@@ -88,10 +88,9 @@ contexts:
       push: function_parameters
 
     # Function calls (matches names before '(')
-    - match: '(\w+)(?=\s*\()'
-      scope: support.function
-      # Only color if it's not a keyword/type
-      unless: '\b(if|while|return|byte|float|int|mat4|model|string|vec[234]|void|xptr)\b'
+    - match: '\b(?!(?:if|while|return|byte|float|int|mat4|model|string|vec[234]|void|xptr)\b)(\w+)(?=\s*\()'
+      captures:
+        1: support.function
 
     # Color storage.type in purple inside expression
     - match: '\b(byte|float|int|mat4|model|string|vec[234]|void|xptr)\b'
