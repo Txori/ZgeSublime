@@ -60,14 +60,87 @@ void debugFunction(float varFloat, int varInt, string varString, model varModel,
 }]]>
       </Source>
     </ZLibrary>
+    <ZLibrary Comment="ZGE" HasInitializer="1">
+      <Source>
+<![CDATA[//
+// defining constants
+const int FALSE = 0, TRUE = 1;
+const float PI2 = PI * 2;
+
+// usage of constants
+if(x > 22) flag = FALSE;
+a = sin(CurrentModel.Rotation.Z * PI2);
+
+CurrentModel.Position = Player.Position;
+CurrentModel.Velocity.X = cos(Player.Rotation.Z * PI * 2) * BULLET_SPEED;
+CurrentModel.Velocity.Y = sin(Player.Rotation.Z * PI * 2) * BULLET_SPEED;
+
+if(PlayerScore > 0 && PlayerScore % 5000 == 0)
+  PlayerLives += 1;
+
+if( (App.Time > 30) && (PlayerLives < 2) ) {
+  Difficulty *= 1.2;
+  Speed *= 1.2;
+}
+
+if(CurrentModel.Position.Y > -30) {
+  CurrentModel.Scale = 1.2 + sin(App.Time);
+  ObjectColor.Color.R = rnd();
+} else
+  @RemoveModel();
+
+switch(status) {
+  case 0 :
+  case 1 :
+  case 2 :
+    // when i is 0, 1 or 2
+    doSomething();
+    break;
+  case 3 :
+    // when i is 3
+    doSomethingElse();
+    break;
+  default :
+    //The default case when i is none of the above
+}
+
+while(i < 42) {
+   if(i == 10)
+     break;  //exit loop
+   i++;
+}
+
+float max(float v1, float v2) {
+  return v1 >= v2 ? v1 : v2;
+}
+
+float max3(float v1, float v2, float v3) {
+  return max(max(v1, v2), v3);
+}
+
+// Separate r,g,b from color and return back to caller.
+// Notice the "ref" word in front of the arguments that are passed by reference.
+void splitColor(int color,ref int r, ref int g, ref int b) {
+  r = color >> 16;
+  g = color >> 8 & 0xFF;
+  b = color & 0xFF;
+}
+
+// call this function
+int r,g,b;
+splitColor(0xff8020, r, g, b); // r == 255, g == 128, b == 32
+]]>
+      </Source>
+    </ZLibrary>
     <SpawnModel Model="ModelSphere"/>
   </OnLoaded>
   <OnUpdate>
-    <ZExpression Comment="ZExpression test">
+    <ZExpression Comment="Single line ZExpression" Expression="int test = 6;"/>
+    <ZExpression Comment="Multi line ZExpression">
       <Expression>
 <![CDATA[//
 // storage.type
-float varFloat = 3.14;
+float varFloat = 3.14f;
 int varInt = 64;
 string varString = "hello string = 3";
 model m = ModelSphere;
@@ -75,12 +148,24 @@ byte varByte = 1;
 mat4 varMat4;
 vec2 varVec2;
 vec3 varVec3;
-vec4 varVec4;
+vec4 varVec4 = vector4(1,2,3,4);
 xptr varXptr;
 
 varVec3.X = 0;
 varVec3.Y += 0.5;
-varVec3.Z *= 1;]]>
+//varVec3.Z *= 1;
+
+// if else case break
+if (App.RenderPasses > 1)
+{
+  while(CameraGame.Position.X == 0) {
+    switch (App.CurrentRenderPass)
+    {
+      case 0: CameraGame.Position.X --; break; // Comment at the end of the line
+      case 1: CameraGame.Position.X += 1; break;
+    }
+  }
+} else CameraGame.Position.X = 0;]]>
       </Expression>
     </ZExpression>
   </OnUpdate>
@@ -98,7 +183,8 @@ varVec3.Z *= 1;]]>
 <![CDATA[//X,Y : current coordinate (0..1)
 //Pixel : current color (rgb)
 //Sample expression: Pixel.R=abs(sin(X*16));
-Pixel.G = X;]]>
+Pixel.G = X;
+//Pixel.R = Y;]]>
           </Expression>
         </BitmapExpression>
       </Producers>
@@ -128,10 +214,15 @@ C.B = -V.Y;]]>
       </Producers>
     </Mesh>
     <Model Name="ModelSphere">
+      <Comment>
+<![CDATA[This is a multiline comment.
+To see if it's working, even though I'm not sur how to spawn that in ZGameEditor.]]>
+      </Comment>
       <OnRender>
         <UseMaterial Material="MaterialTest"/>
         <RenderMesh Mesh="MeshSphere"/>
       </OnRender>
     </Model>
+    <Group Comment="Empty group"/>
   </Content>
 </ZApplication>
