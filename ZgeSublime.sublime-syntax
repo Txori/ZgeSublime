@@ -172,6 +172,14 @@ contexts:
     - match: '".*?"'
       scope: string.quoted.double.csharp
 
+    # Component Invocation calls
+    - match: '@(AnimatorGroup|AnimatorSimple|AppState|Array|AudioMixer|Bitmap|BitmapBlur|BitmapCells|BitmapCombine|BitmapConvolution|BitmapDistort|BitmapExpression|BitmapFromFile|BitmapLoad|BitmapNoise|BitmapPixels|BitmapRect|BitmapZoom|CallComponent|Camera|Condition|Constant|DefineCollision|File|FileAction|FileMoveData|Font|Group|ImplicitCombine|ImplicitExpression|ImplicitPrimitive|ImplicitWarp|KeyPress|Light|Material|MaterialTexture|Mesh|MeshBox|MeshCombine|MeshExpression|MeshImplicit|MeshImport|MeshLoad|MeshLoop|MeshNoise|MeshSphere|MeshTransform|Model|ModelState|MouseModelController|Music|MusicControl|PlaySound|RefreshContent|RemoveAllModels|RemoveModel|RenderBeams|RenderMesh|RenderNet|RenderParticles|RenderSetColor|RenderSprite|RenderTarget|RenderText|RenderTile|RenderTransform|RenderTransformGroup|Repeat|Sample|SampleExpression|SampleImport|SetAppState|SetModelState|SetRenterTarget|Shader|ShaderVariable|Sound|SpawnModel|SpriteSheet|StartAnimator|SteeringBehavior|SteeringController|Thread|TileSet|Timer|UseMaterial|Variable|WebOpen|ZExpression|ZExternalLibrary|ZLibrary)(?=\()'
+      scope: punctuation.definition.component  # @ symbol
+
+    # Named component property
+    - match: '\b(\w+)(?=\s*:)'
+      scope: variable.parameter.named        # Property name (orange)
+
 
   multiline_comment:
     - match: '\*/'
