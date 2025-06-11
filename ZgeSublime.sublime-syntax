@@ -4,103 +4,163 @@ name: ZGameEditor
 file_extensions: [zgeproj]
 scope: text.xml.zgeproj
 
+variables:
+
+  zgecode_tags: 'BeforeInitExp|Expression|TextExpression|Source|WhileExp'
+  data_tags: 'BitmapFile|Icon|MeshData'
+  storage_tags: 'byte|float|int|mat4|model|string|vec[234]|void|xptr'
+  cdata_open: '(<!\[)(CDATA)(\[)'
+  cdata_close: '((?://.*?)?)(\]\])(>)'
+
+
 contexts:
 
   main:
 
-    - match: '<(BeforeInitExp|Expression|TextExpression|Source|WhileExp)>'
+    - match: '(<)({{zgecode_tags}})(>)'
+      captures:
+        1: punctuation.definition.tag.begin.xml
+        2: entity.name.tag.zgecode.xml
+        3: punctuation.definition.tag.begin.content.xml
       push: zgecode
-      scope: entity.name.tag.xml
 
     - match: '<VertexShaderSource>'
       push: vertexshader
       scope: entity.name.tag.xml
 
-    - match: '<Comment>'
+    - match: '(<)(Comment)(>)'
+      captures:
+        1: punctuation.definition.tag.begin.xml
+        2: entity.name.tag.xml
+        3: punctuation.definition.tag.begin.content.xml
       push: text
-      scope: entity.name.tag.xml
 
-    - match: '<BitmapFile>|<Icon>|<MeshData>'
+    - match: '(<)({{data_tags}})(>)'
+      captures:
+        1: punctuation.definition.tag.begin.xml
+        2: entity.name.tag.xml
+        3: punctuation.definition.tag.begin.content.xml
       push: data
-      scope: entity.name.tag.xml
 
     - match: '<\?xml|\?>'
       scope: punctuation.definition.tag.xml
 
-    - include: scope:source.php # Better than text.xml because less visible
+    - include: scope:text.xml
 
 
   zgecode:
     
-    - match: '<!\[CDATA\['
+    - match: '{{cdata_open}}'
+      captures:
+        1: punctuation.definition.tag.begin.xml
+        2: keyword.declaration.cdata.xml
+        3: punctuation.definition.tag.begin.content.xml
       push: zgecode_content
-      scope: punctuation.definition.cdata.xml
     
-    - match: '</(BeforeInitExp|Expression|TextExpression|Source|WhileExp)>'
+    - match: '(</)({{zgecode_tags}})(>)'
+      captures:
+        1: punctuation.definition.tag.begin.xml
+        2: entity.name.tag.xml
+        3: punctuation.definition.tag.end.xml
       pop: true
-      scope: entity.name.tag.xml
+
 
   zgecode_content:
 
-    # End of CDATA
-    - match: '(?://.*?)?(\]\]>)'
-      scope: punctuation.definition.cdata.xml
+    - match: '{{cdata_close}}'
+      captures:
+        1: comment.line.double-slash.csharp  # Optional C# comment
+        2: punctuation.definition.cdata.xml  # ]] part
+        3: punctuation.definition.tag.xml    # > part
       pop: true
 
-    # Single-line comments (gray)
+    # If/else control statements
+    - match: '\b(if|else|while)\b'
+      scope: keyword.control.conditional.csharp
+
+    # Switch control statement
+    - match: '\bswitch\b'
+      scope: keyword.control.switch.csharp
+
+    # Case label in switch statement
+    - match: '\bcase\b'
+      scope: keyword.control.case.csharp
+
+    # Default label in switch statement
+    - match: '\bdefault\b'
+      scope: keyword.control.default.csharp
+
+    # Break statement for flow control
+    - match: '\bbreak\b'
+      scope: keyword.control.break.csharp
+
+    # Return statement for flow control
+    - match: '\breturn\b'
+      scope: keyword.control.flow.return.csharp
+
+    # Single-line comments starting with //
     - match: '(//).*'
       captures:
         1: punctuation.definition.comment.csharp
       scope: comment.line.double-slash.csharp
 
-    # Multi-line comments (gray)
+    # Multi-line comments between /* and */
     - match: '/\*'
-      push: csharp_multiline_comment
+      push: multiline_comment
       scope: punctuation.definition.comment.csharp
 
-    # Orange numeric literals (all types)
+    # Hexadecimal number literals
+    - match: '\b0x[0-9a-fA-F]+\b'
+      scope: constant.numeric.hex.csharp
+
+    # Numeric literals (all types)
     - match: '\b\d+(\.\d+)?([ul]?[df]?f?)\b'
       scope: constant.numeric.csharp
 
+    # Bitwise operators
+    - match: '(&|\||\^|~|<<|>>)'
+      scope: keyword.operator.bitwise.csharp
+
+    # Storage modifiers for declarations
     - match: '\b(const|inline|override|private|virtual)\b'
       scope: storage.modifier
 
-    # 'this' keyword
+    # 'this' keyword reference
     - match: \bthis\b
       scope: variable.language.this.csharp
 
-    # Class declaration
+    # Class declaration statements
     - match: '\b(class)\s+(\w+)'
       captures:
         1: storage.modifier
         2: entity.name.type.class.csharp
 
-    # Gray semicolons at end of lines
+    # Semicolon statement terminators
     - match: ';\s*$'
       scope: punctuation.terminator.statement.gray
 
-    # Function declarations
-    - match: '\b(byte|float|int|mat4|model|string|vec[234]|void|xptr)\s+(\w+)\s*\('
+    # Function/method declarations
+    - match: '\b({{storage_tags}})\s+(\w+)\s*\('
       captures:
         1: storage.type                # Return type (purple)
         2: entity.name.function.csharp # Function name (green)
         3: meta.function.parameters    # Parameter list
       push: function_parameters
 
-    # Function calls (matches names before '(')
-    - match: '\b(?!(?:if|while|return|byte|float|int|mat4|model|string|vec[234]|void|xptr)\b)(\w+)(?=\s*\()'
+    # Function/method calls
+    - match: '\b(?!(?:if|while|return|{{storage_tags}})\b)(\w+)(?=\s*\()'
       captures:
         1: support.function
 
-    # Color storage.type in purple inside expression
-    - match: '\b(byte|float|int|mat4|model|string|vec[234]|void|xptr)\b'
+    # Storage type references in expressions
+    - match: '\b({{storage_tags}})\b'
       scope: storage.type
 
     # Comparison operators
     - match: '(==|!=|>=|<=|>|<)'
       scope: keyword.operator.comparison.csharp
 
-    # Assignment Operators
+    # Assignment and arithmetic operators
     - match: '(\+|-|\*|/|%|=|\+=|-=|\*=|/=|%=|\+\+|--|\?|:)'
       scope: keyword.operator.arithmetic.csharp
 
@@ -108,16 +168,12 @@ contexts:
     - match: '(&&|\|\||!)'
       scope: keyword.operator.logical.csharp
 
-    # Explicitly scope 'return' (overrides any included syntax)
-    - match: '\breturn\b'
-      scope: keyword.control.flow.return.csharp
-
-    # Color strings (including quotes) in green
+    # String literals in double quotes
     - match: '".*?"'
       scope: string.quoted.double.csharp
 
 
-  csharp_multiline_comment:
+  multiline_comment:
     - match: '\*/'
       pop: true
       scope: punctuation.definition.comment.csharp
@@ -126,7 +182,7 @@ contexts:
 
 
   function_parameters:
-    - match: '\b(byte|float|int|mat4|model|string|vec[234]|void|xptr)\s+(\w+)\b'
+    - match: '\b({{storage_tags}})\s+(\w+)\b'
       captures:
         1: storage.type                 # Parameter type (purple)
         2: variable.parameter.csharp    # Parameter name (light orange)
@@ -136,18 +192,25 @@ contexts:
 
   vertexshader:
 
-    - match: '<!\[CDATA\['
+    - match: '{{cdata_open}}'
+      captures:
+        1: punctuation.definition.tag.begin.xml
+        2: keyword.declaration.cdata.xml
+        3: punctuation.definition.tag.begin.content.xml
       push: vertexshader_content
-      scope: punctuation.definition.cdata.xml
     
     - match: '</VertexShaderSource>'
       pop: true
       scope: entity.name.tag.xml
 
+
   vertexshader_content:
 
-    - match: '(?://.*?)?(\]\]>)'
-      scope: punctuation.definition.cdata.xml
+    - match: '{{cdata_close}}'
+      captures:
+        1: comment.line.double-slash.csharp  # Optional C# comment
+        2: punctuation.definition.cdata.xml  # ]] part
+        3: punctuation.definition.tag.xml    # > part
       pop: true
 
     - include: scope:source.c
@@ -155,18 +218,28 @@ contexts:
 
   text:
     
-    - match: '<!\[CDATA\['
+    - match: '{{cdata_open}}'
+      captures:
+        1: punctuation.definition.tag.begin.xml
+        2: keyword.declaration.cdata.xml
+        3: punctuation.definition.tag.begin.content.xml
       push: text_content
-      scope: punctuation.definition.cdata.xml
     
-    - match: '</Comment>'
+    - match: '(</)(Comment)(>)'
+      captures:
+        1: punctuation.definition.tag.begin.xml
+        2: entity.name.tag.xml
+        3: punctuation.definition.tag.end.xml
       pop: true
-      scope: entity.name.tag.xml
+
 
   text_content:
 
-    - match: '(?://.*?)?(\]\]>)'
-      scope: punctuation.definition.cdata.xml
+    - match: '{{cdata_close}}'
+      captures:
+        1: comment.line.double-slash.csharp  # Optional C# comment
+        2: punctuation.definition.cdata.xml  # ]] part
+        3: punctuation.definition.tag.xml    # > part
       pop: true
 
     - include: scope:source.txt
@@ -174,19 +247,29 @@ contexts:
 
   data:
 
-    - match: '<!\[CDATA\['
+    - match: '{{cdata_open}}'
+      captures:
+        1: punctuation.definition.tag.begin.xml
+        2: keyword.declaration.cdata.xml
+        3: punctuation.definition.tag.begin.content.xml
       push: data_content
-      scope: punctuation.definition.cdata.xml
     
-    - match: '</(BitmapFile|Icon|MeshData)>'
+    - match: '(</)({{data_tags}})(>)'
+      captures:
+        1: punctuation.definition.tag.begin.xml
+        2: entity.name.tag.xml
+        3: punctuation.definition.tag.end.xml
       pop: true
-      scope: entity.name.tag.xml
+
+
 
   data_content:
 
-    - match: '\]\]>'
-      scope: punctuation.definition.cdata.xml
-      pop: true
+    - meta_scope: comment.block.xml  # Makes everything gray
 
-    - match: '.'
-      scope: comment.line
+    - match: '{{cdata_close}}'
+      captures:
+        1: comment.line.double-slash.csharp  # Optional C# comment
+        2: punctuation.definition.cdata.xml  # ]] part
+        3: punctuation.definition.tag.xml    # > part
+      pop: true
