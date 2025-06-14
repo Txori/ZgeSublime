@@ -8,7 +8,7 @@ variables:
 
   zgecode_tags: 'BeforeInitExp|Expression|TextExpression|Source|WhileExp'
   glsl_tags: 'FragmentShaderSource|GeometryShaderSource|VertexShaderSource'
-  data_tags: 'BitmapFile|Icon|MeshData'
+  data_tags: 'BitmapFile|FileEmbedded|Icon|MeshData'
   storage_tags: 'byte|float|int|mat4|model|string|vec[234]|void|xptr'
   cdata_open: '(<!\[)(CDATA)(\[)'
   cdata_close: '((?://.*?)?)(\]\])(>)'
