@@ -7,6 +7,7 @@ scope: text.xml.zgeproj
 variables:
 
   zgecode_tags: 'BeforeInitExp|Expression|TextExpression|Source|WhileExp'
+  glsl_tags: 'FragmentShaderSource|GeometryShaderSource|VertexShaderSource'
   data_tags: 'BitmapFile|Icon|MeshData'
   storage_tags: 'byte|float|int|mat4|model|string|vec[234]|void|xptr'
   cdata_open: '(<!\[)(CDATA)(\[)'
@@ -24,9 +25,12 @@ contexts:
         3: punctuation.definition.tag.begin.content.xml
       push: zgecode
 
-    - match: '<VertexShaderSource>'
-      push: vertexshader
-      scope: entity.name.tag.xml
+    - match: '(<)({{glsl_tags}})(>)'
+      captures:
+        1: punctuation.definition.tag.begin.xml
+        2: entity.name.tag.xml
+        3: punctuation.definition.tag.begin.content.xml
+      push: glsl
 
     - match: '(<)(Comment)(>)'
       captures:
@@ -198,21 +202,24 @@ contexts:
       pop: true
 
 
-  vertexshader:
+  glsl:
 
     - match: '{{cdata_open}}'
       captures:
         1: punctuation.definition.tag.begin.xml
         2: keyword.declaration.cdata.xml
         3: punctuation.definition.tag.begin.content.xml
-      push: vertexshader_content
+      push: glsl_content
     
-    - match: '</VertexShaderSource>'
+    - match: '(</)({{glsl_tags}})(>)'
+      captures:
+        1: punctuation.definition.tag.begin.xml
+        2: entity.name.tag.xml
+        3: punctuation.definition.tag.end.xml
       pop: true
-      scope: entity.name.tag.xml
 
 
-  vertexshader_content:
+  glsl_content:
 
     - match: '{{cdata_close}}'
       captures:
