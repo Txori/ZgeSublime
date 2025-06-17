@@ -17,7 +17,7 @@ Default path: `C:/Dropbox/System/ZGameEditor/ZGameEditor.exe`
 
 The plugin includes custom syntax highlighting for `.zgeproj` files:
 
-- XML structure is styled similarly to PHP to de-emphasize markup
+- The base is styled as standard XML
 - ZExpression sections (`<Expression>`, `<WhileExp>`, etc.) use C#-like coloring
 - Data sections (`<BitmapFile>`, `<MeshData>`) appear in grey for minimal visibility
 
