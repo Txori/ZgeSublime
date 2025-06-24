@@ -11,7 +11,7 @@ A [Sublime Text](https://www.sublimetext.com/) plugin to build and run [ZGameEdi
 
 Edit the `ZgeSublime.sublime-settings` file and set the path to your `ZGameEditor.exe`.
 
-Default path: `C:/Dropbox/System/ZGameEditor/ZGameEditor.exe`
+Default path: `C:/ZGameEditor/ZGameEditor.exe`
 
 ## Syntax Highlighting
 
