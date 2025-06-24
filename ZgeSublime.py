@@ -54,6 +54,9 @@ class ZgeFoldDataCommand(sublime_plugin.TextCommand):
     If the content is currently unfolded, it will fold it, displaying '...'.
     If the content is currently folded, it will unfold it, revealing the content.
     """
+    def is_enabled(self):
+        return is_zgeproj(self.view)
+
     def run(self, edit):
         # 1. Get the entire content of the current view.
         content = self.view.substr(sublime.Region(0, self.view.size()))
