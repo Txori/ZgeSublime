@@ -5,6 +5,10 @@
             {
                 "caption": "Run Project",
                 "command": "zge_run_project"
+            },
+            {
+                "caption": "Fold/Unfold data",
+                "command": "zge_fold_data"
             }
         ]
     }
