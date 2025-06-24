@@ -3,7 +3,7 @@
         "caption": "ZGameEditor",
         "children": [
             {
-                "caption": "Run Project",
+                "caption": "Run project",
                 "command": "zge_run_project"
             },
             {
