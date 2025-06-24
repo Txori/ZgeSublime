@@ -2,6 +2,7 @@ import sublime
 import sublime_plugin
 import subprocess
 import os
+import re
 
 # Only enable the context menu for files with the .zgeproj extension
 def is_zgeproj(view):
@@ -48,7 +49,7 @@ class ZgeRunProjectCommand(sublime_plugin.TextCommand):
 class ZgeFoldDataCommand(sublime_plugin.TextCommand):
     """
     Sublime Text plugin to toggle the collapsed (folded) state of the
-    content within <MeshImport> and <BitmapFromFile> XML tags.
+    content within imported data XML tags.
 
     If the content is currently unfolded, it will fold it, displaying '...'.
     If the content is currently folded, it will unfold it, revealing the content.
@@ -61,7 +62,7 @@ class ZgeFoldDataCommand(sublime_plugin.TextCommand):
         #    This regex remains the same as it correctly identifies the start and end
         #    of the content that needs to be folded/unfolded.
         pattern = re.compile(
-            r'(<(BitmapFile|FileEmbedded|Icon|MeshData|SampleData)[^>]*>)(.*?)(</\2>)',
+            r'(<(BitmapFile|FileEmbedded|Icon|MeshData|MusicFile|SampleData|SpriteData|Values)[^>]*>)(.*?)(</\2>)',
             re.DOTALL
         )
 
