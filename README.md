@@ -38,8 +38,3 @@ You can also press `Ctrl+Enter` to run the same command.
 
 - **Fold/Unfold data**  
 This folds (or unfolds) all the XML data tags in your project, so you can focus only on the code.
-
-## Planned Features
-
-- Commands to auto-close or expand specific XML tags
-- Open `<Expression>` blocks in external views for better clarity
