@@ -1,6 +1,6 @@
 # ZgeSublime
 
-A [Sublime Text](https://www.sublimetext.com/) plugin to build and run `.zgeproj` files directly from the editor.
+A [Sublime Text](https://www.sublimetext.com/) plugin to build and run [ZGameEditor](https://www.zgameeditor.org/) projects directly from the editor.
 
 ## Installation
 
