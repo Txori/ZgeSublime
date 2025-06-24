@@ -61,7 +61,7 @@ class ZgeFoldDataCommand(sublime_plugin.TextCommand):
         #    This regex remains the same as it correctly identifies the start and end
         #    of the content that needs to be folded/unfolded.
         pattern = re.compile(
-            r'(<(BitmapFile|FileEmbedded|Icon|MeshData)[^>]*>)(.*?)(</\2>)',
+            r'(<(BitmapFile|FileEmbedded|Icon|MeshData|SampleData)[^>]*>)(.*?)(</\2>)',
             re.DOTALL
         )
 
