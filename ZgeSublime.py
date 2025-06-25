@@ -121,10 +121,10 @@ class ZgeAddCodeSpacingCommand(sublime_plugin.TextCommand):
     It now also preserves the original whitespace (newlines and indentation)
     surrounding the CDATA blocks.
 
-    This version ensures consistency: it strips any partial or existing
-    "//" comments and associated newlines from the start and end of the
-    CDATA content, then adds the standardized required prefix and suffix,
-    making the operation idempotent.
+    This version ensures consistency: it strips *only* any previously added
+    plugin-specific "//" and associated newlines from the start and end of the
+    CDATA content, then adds the standardized required prefix and suffix.
+    User-defined comments beginning or ending with "//" will be preserved.
     """
 
     def run(self, edit):
@@ -183,11 +183,11 @@ class ZgeAddCodeSpacingCommand(sublime_plugin.TextCommand):
         standard_prefix = '//\n\n'
         standard_suffix = '\n\n//'
 
-        # Patterns to strip existing partial comments/newlines.
-        # This will remove any combination of "//" and 0, 1, or 2 newlines
-        # from the very beginning or end, effectively normalizing the content.
-        strip_prefix_pattern = re.compile(r'^\s*//\s*\n*\s*')
-        strip_suffix_pattern = re.compile(r'\s*\n*\s*//\s*$')
+        # Patterns to *specifically* strip the plugin's own markers.
+        # These patterns are now more precise to avoid removing user-defined comments.
+        # It looks for "//" followed by exactly two newlines, optionally with surrounding whitespace.
+        strip_prefix_pattern = re.compile(r'^\s*//\s*\n\n\s*')
+        strip_suffix_pattern = re.compile(r'\s*\n\n\s*//\s*$')
 
 
         # Iterate through matches in reverse order to ensure that replacements
@@ -204,16 +204,21 @@ class ZgeAddCodeSpacingCommand(sublime_plugin.TextCommand):
             closing_tag = m.group(6)
 
             # --- Normalization Step ---
-            # 1. Strip any existing prefix comments/newlines.
-            stripped_content = strip_prefix_pattern.sub('', cdata_content)
-            # 2. Strip any existing suffix comments/newlines.
-            stripped_content = strip_suffix_pattern.sub('', stripped_content)
-            # 3. Trim leading/trailing whitespace from the core content
-            stripped_content = stripped_content.strip()
+            # Attempt to remove *only* the plugin's specific prefix if it exists.
+            # re.sub will only replace if the pattern matches at the beginning.
+            stripped_content = strip_prefix_pattern.sub('', cdata_content, count=1)
+
+            # Attempt to remove *only* the plugin's specific suffix if it exists.
+            # re.sub will only replace if the pattern matches at the end.
+            stripped_content = strip_suffix_pattern.sub('', stripped_content, count=1)
+
+            # Do NOT use .strip() here, as it would remove legitimate leading/trailing
+            # whitespace or comments from the user's original code.
 
             # --- Enforcement Step ---
             # Add the standardized prefix and suffix.
-            # This ensures the output is consistent regardless of initial state.
+            # This ensures the output is consistent regardless of initial state,
+            # and preserves other user comments.
             modified_cdata_inner_content = '{0}{1}{2}'.format(
                 standard_prefix,
                 stripped_content,
@@ -234,4 +239,5 @@ class ZgeAddCodeSpacingCommand(sublime_plugin.TextCommand):
             self.view.replace(edit, original_match_region, new_full_string)
 
         # Display a success message in the Sublime Text status bar.
-        sublime.status_message("Code spacing standardized successfully!")
+        sublime.status_message("Code spacing standardized and comments preserved successfully!")
+
