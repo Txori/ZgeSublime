@@ -109,3 +109,130 @@ class ZgeFoldDataCommand(sublime_plugin.TextCommand):
             self.view.fold(regions_to_toggle)
             sublime.status_message("Folded {} data tags.".format(len(regions_to_toggle)))
             # print("Successfully folded {} regions.".format(len(regions_to_toggle))) # Debug print
+
+class ZgeAddCodeSpacingCommand(sublime_plugin.TextCommand):
+    """
+    Sublime Text 3 command to add specific line spacing and comments
+    around CDATA sections within designated XML code tags.
+
+    This command targets XML tags such as "BeforeInitExp", "Expression", etc.,
+    and modifies their CDATA content to include "//" and two newlines
+    after the CDATA opening, and two newlines and "//" before the CDATA closing.
+    It now also preserves the original whitespace (newlines and indentation)
+    surrounding the CDATA blocks.
+
+    This version ensures consistency: it strips any partial or existing
+    "//" comments and associated newlines from the start and end of the
+    CDATA content, then adds the standardized required prefix and suffix,
+    making the operation idempotent.
+    """
+
+    def run(self, edit):
+        """
+        Executes the command to modify the content of the current view.
+
+        Args:
+            edit (sublime.Edit): An object that represents a single, atomic
+                                 undoable edit. All changes to the buffer
+                                 must be performed via this object.
+        """
+        # Define the list of XML tags whose CDATA content should be modified.
+        code_tags = [
+            "BeforeInitExp",
+            "Expression",
+            "OnEmitExpression",
+            "TextExpression",
+            "Source",
+            "WhileExp"
+        ]
+
+        # Escape tag names for use in a regular expression to handle special characters.
+        tag_pattern = '|'.join(re.escape(tag) for tag in code_tags)
+
+        # Construct the regular expression pattern to find and capture all necessary parts:
+        # Group 1: The entire opening XML tag (e.g., <Expression foo="bar">)
+        #   - Group 2 (nested): The actual tag name (e.g., Expression)
+        # Group 3: Whitespace between the opening XML tag and the CDATA opening delimiter.
+        # Group 4: The content inside the CDATA block.
+        # Group 5: Whitespace between the CDATA closing delimiter and the closing XML tag.
+        # Group 6: The entire closing XML tag (e.g., </Expression>), using backreference \2.
+        regex_pattern = (
+            r'(<(' + tag_pattern + r')\b[^>]*>)'  # Group 1: Opening tag (captures Group 2: tag name)
+            r'(\s*)'                             # Group 3: Whitespace *before* <![CDATA[
+            r'<!\[CDATA\['
+            r'(.*?)'                             # Group 4: Non-greedy match for the content *within* CDATA
+            r'\]\]>'
+            r'(\s*)'                             # Group 5: Whitespace *after* ]]>
+            r'(</\2>)'                           # Group 6: Closing tag, using backreference to Group 2
+        )
+
+        # Compile the regex for better performance.
+        # re.DOTALL ensures that '.*?' matches newline characters as well,
+        # allowing it to capture multi-line CDATA content.
+        pattern = re.compile(regex_pattern, re.DOTALL)
+
+        # Get the entire content of the current view (the document being edited).
+        full_region = sublime.Region(0, self.view.size())
+        content = self.view.substr(full_region)
+
+        # Find all occurrences of the pattern in the content.
+        # Store them in a list before iterating in reverse to avoid issues
+        # with region offsets caused by replacements.
+        matches = list(pattern.finditer(content))
+
+        # Define the exact prefix and suffix we want to enforce.
+        standard_prefix = '//\n\n'
+        standard_suffix = '\n\n//'
+
+        # Patterns to strip existing partial comments/newlines.
+        # This will remove any combination of "//" and 0, 1, or 2 newlines
+        # from the very beginning or end, effectively normalizing the content.
+        strip_prefix_pattern = re.compile(r'^\s*//\s*\n*\s*')
+        strip_suffix_pattern = re.compile(r'\s*\n*\s*//\s*$')
+
+
+        # Iterate through matches in reverse order to ensure that replacements
+        # do not affect the start/end positions of subsequent matches.
+        for m in reversed(matches):
+            # Create a Sublime Text Region object corresponding to the full match.
+            original_match_region = sublime.Region(m.start(), m.end())
+
+            # Extract the captured groups.
+            opening_tag = m.group(1)
+            whitespace_before_cdata = m.group(3)
+            cdata_content = m.group(4)
+            whitespace_after_cdata = m.group(5)
+            closing_tag = m.group(6)
+
+            # --- Normalization Step ---
+            # 1. Strip any existing prefix comments/newlines.
+            stripped_content = strip_prefix_pattern.sub('', cdata_content)
+            # 2. Strip any existing suffix comments/newlines.
+            stripped_content = strip_suffix_pattern.sub('', stripped_content)
+            # 3. Trim leading/trailing whitespace from the core content
+            stripped_content = stripped_content.strip()
+
+            # --- Enforcement Step ---
+            # Add the standardized prefix and suffix.
+            # This ensures the output is consistent regardless of initial state.
+            modified_cdata_inner_content = '{0}{1}{2}'.format(
+                standard_prefix,
+                stripped_content,
+                standard_suffix
+            )
+
+            # Assemble the complete new string for the matched region,
+            # preserving the captured whitespace around the CDATA block.
+            new_full_string = '{0}{1}<![CDATA[{2}]]>{3}{4}'.format(
+                opening_tag,
+                whitespace_before_cdata,
+                modified_cdata_inner_content,
+                whitespace_after_cdata,
+                closing_tag
+            )
+
+            # Replace the old content with the newly formatted content in the view.
+            self.view.replace(edit, original_match_region, new_full_string)
+
+        # Display a success message in the Sublime Text status bar.
+        sublime.status_message("Code spacing standardized successfully!")
