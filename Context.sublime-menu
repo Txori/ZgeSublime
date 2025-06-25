@@ -9,6 +9,10 @@
             {
                 "caption": "Fold/Unfold data",
                 "command": "zge_fold_data"
+            },
+            {
+                "caption": "Add code spacing",
+                "command": "zge_add_code_spacing"
             }
         ]
     }
