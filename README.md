@@ -19,7 +19,7 @@ The plugin includes custom syntax highlighting for `.zgeproj` files:
 
 - The base is styled as standard XML
 - ZExpression sections (`<Expression>`, `<WhileExp>`, etc.) use C#-like coloring
-- Data sections (`<BitmapFile>`, `<MeshData>`) appear in grey for minimal visibility
+- Data sections (`<BitmapFile>`, `<MeshData>`, etc.) appear in grey for minimal visibility
 
 The syntax should activate automatically when opening `.zgeproj` files. If it doesn't:
 
@@ -38,3 +38,24 @@ You can also press `Ctrl+Enter` to run the same command.
 
 - **Fold/Unfold data**  
 This folds (or unfolds) all the XML data tags in your project, so you can focus only on the code.
+
+- **Add code spacing**  
+This will standardizes spacing and adds comments within specific XML `<![CDATA[...]]>` sections, improving code readability.
+Running multiple times will not add extra spacing; it normalizes the format.
+
+For example, it will convert:
+```
+<Expression>
+<![CDATA[float c1 = cos(X);]]>
+</Expression>
+```
+To:
+```
+<Expression>
+<![CDATA[//
+
+float c1 = cos(X);
+
+//]]>
+</Expression>
+```
