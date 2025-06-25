@@ -141,7 +141,6 @@ class ZgeAddCodeSpacingCommand(sublime_plugin.TextCommand):
             "BeforeInitExp",
             "Expression",
             "OnEmitExpression",
-            "TextExpression",
             "Source",
             "WhileExp"
         ]
