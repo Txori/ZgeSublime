@@ -40,7 +40,7 @@ You can also press `Ctrl+Enter` to run the same command.
 This folds (or unfolds) all the XML data tags in your project, so you can focus only on the code.
 
 - **Add code spacing**  
-This will standardizes spacing and adds comments within specific XML `<![CDATA[...]]>` sections, improving code readability.
+This will standardize spacing and adds comments within specific XML `<![CDATA[...]]>` sections, improving code readability.
 Running multiple times will not add extra spacing; it normalizes the format.
 
 For example, it will convert:
