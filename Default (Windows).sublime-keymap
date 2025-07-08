@@ -2,5 +2,9 @@
     {
         "keys": ["ctrl+enter"],
         "command": "zge_run_project"
+    },
+    {
+        "keys": ["ctrl+e"],
+        "command": "zge_edit_project"
     }
 ]
