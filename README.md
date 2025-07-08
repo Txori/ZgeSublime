@@ -36,7 +36,7 @@ Right-click in the editor to open the context menu and choose **ZGameEditor**:
 This saves the file, then builds and runs your project.  
 You can also press `Ctrl+Enter` to run the same command.
 
-- **Edit project**
+- **Edit project**  
 This saves the file, then opens the project in ZGameEditor.
 When you save the file in ZGameEditor, it automatically updates the file in Sublime Text.
 So this is very handy to add stuff in your project, then get back to Sublime Text.
