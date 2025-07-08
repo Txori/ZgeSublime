@@ -1,6 +1,6 @@
 # ZgeSublime
 
-A [Sublime Text](https://www.sublimetext.com/) 4 plugin to build and run [ZGameEditor](https://www.zgameeditor.org/) projects directly from the editor.
+A [Sublime Text 4](https://www.sublimetext.com/) plugin to build and run [ZGameEditor](https://www.zgameeditor.org/) projects directly from the editor.
 
 ## Installation
 
