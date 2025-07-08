@@ -7,6 +7,10 @@
                 "command": "zge_run_project"
             },
             {
+                "caption": "Edit project",
+                "command": "zge_edit_project"
+            },
+            {
                 "caption": "Fold/Unfold data",
                 "command": "zge_fold_data"
             },
