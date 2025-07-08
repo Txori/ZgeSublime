@@ -1,6 +1,6 @@
 # ZgeSublime
 
-A [Sublime Text](https://www.sublimetext.com/) plugin to build and run [ZGameEditor](https://www.zgameeditor.org/) projects directly from the editor.
+A [Sublime Text](https://www.sublimetext.com/) 4 plugin to build and run [ZGameEditor](https://www.zgameeditor.org/) projects directly from the editor.
 
 ## Installation
 
@@ -35,6 +35,12 @@ Right-click in the editor to open the context menu and choose **ZGameEditor**:
 - **Run project**  
 This saves the file, then builds and runs your project.  
 You can also press `Ctrl+Enter` to run the same command.
+
+- **Edit project**
+This saves the file, then opens the project in ZGameEditor.
+When you save the file in ZGameEditor, it automatically updates the file in Sublime Text.
+So this is very handy to add stuff in your project, then get back to Sublime Text.
+You can also press `Ctrl+E` to run the same command.
 
 - **Fold/Unfold data**  
 This folds (or unfolds) all the XML data tags in your project, so you can focus only on the code.
