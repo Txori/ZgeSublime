@@ -4,47 +4,111 @@ import subprocess
 import os
 import re
 
-# Only enable the context menu for files with the .zgeproj extension
 def is_zgeproj(view):
+    """
+    Checks if the current view's file has a '.zgeproj' extension.
+    This is used to enable/disable commands in the context menu.
+    """
     file_name = view.file_name()
     return file_name and file_name.endswith(".zgeproj")
 
-# Build and run ZGE project
+def _run_zge_command(view, args, wait_for_completion=False):
+    """
+    Helper function to handle common setup and command execution for ZGE plugin commands.
+
+    This function performs the following steps:
+    1. Gets the full path of the current project file.
+    2. Loads the ZGameEditor.exe path from Sublime Text settings.
+    3. Validates if the ZGameEditor.exe path exists. If not, displays an error.
+    4. Auto-saves the current view before executing the command.
+    5. Constructs and executes the command using subprocess.Popen.
+    6. Optionally waits for the process to complete.
+
+    Args:
+        view (sublime.View): The current Sublime Text view object.
+        args (list): A list of arguments specific to the ZGE command (e.g., ["/b", project_path, exe_path]
+                     for building, or ["/o", project_path] for opening).
+        wait_for_completion (bool, optional): If True, the function will wait for the
+                                              subprocess to finish before returning.
+                                              Defaults to False.
+
+    Returns:
+        subprocess.Popen or None: The Popen object if the command was successfully
+                                  executed, None if there was an error (e.g., editor not found).
+    """
+    project_path = view.file_name()
+
+    # Load ZGE editor path from settings
+    settings = sublime.load_settings("ZgeSublime.sublime-settings")
+    zge_editor = settings.get("zge_editor_path", "")
+
+    # Display error message if ZGameEditor.exe isn't found
+    if not os.path.isfile(zge_editor):
+        sublime.error_message("ZGameEditor.exe not found:\n{}".format(zge_editor))
+        return None
+
+    # Auto-save before running the command to ensure latest changes are included
+    view.run_command("save")
+
+    # Construct the full command list
+    cmd = [zge_editor] + args
+
+    try:
+        # Execute the command
+        proc = subprocess.Popen(cmd)
+        if wait_for_completion:
+            proc.wait() # Wait for the process to complete if required (e.g., for build operations)
+        return proc
+    except Exception as e:
+        # Catch any errors during subprocess execution
+        sublime.error_message("Error executing ZGE command: {}".format(e))
+        return None
+
 class ZgeRunProjectCommand(sublime_plugin.TextCommand):
+    """
+    Sublime Text plugin command to build and run a ZGE project.
+    It uses the ZGameEditor.exe to build the current .zgeproj file
+    into an executable and then runs the generated executable.
+    """
     def is_enabled(self):
         return is_zgeproj(self.view)
 
     def run(self, edit):
-        # Get full path of current file
         project_path = self.view.file_name()
-
-        # Create output .exe path in the same folder
+        # Create the output .exe path in the same directory as the project file
         exe_path = os.path.splitext(project_path)[0] + ".exe"
 
-        # Load path from settings
-        settings = sublime.load_settings("ZgeSublime.sublime-settings")
-        zge_editor = settings.get("zge_editor_path", "")
+        # Use the helper function to build the project.
+        # We wait for completion here because we need the build to finish before running the EXE.
+        build_proc = _run_zge_command(self.view, ["/b", project_path, exe_path], wait_for_completion=True)
 
-        # Display error message if ZGameEditor.exe isn't found
-        if not os.path.isfile(zge_editor):
-            sublime.error_message("ZGameEditor.exe not found:\n{}".format(zge_editor))
+        if build_proc is None:
+            # If the helper function returned None, an error occurred (e.g., editor not found)
             return
 
-        # Auto-save before building
-        self.view.run_command("save")
-
-        # Command to run
-        cmd = [zge_editor, "/b", project_path, exe_path]
-
-        # Build the project and wait for it to finish
-        build_proc = subprocess.Popen(cmd)
-        build_proc.wait()
-
-        # Run the project
+        # After building, check if the executable was created and run it
         if os.path.isfile(exe_path):
-            subprocess.Popen([exe_path])
+            try:
+                subprocess.Popen([exe_path])
+            except Exception as e:
+                sublime.error_message("Error running project EXE: {}".format(e))
         else:
-            sublime.error_message("Build failed: EXE not created.")
+            sublime.error_message("Build failed: EXE not created at '{}'.".format(exe_path))
+
+class ZgeEditProjectCommand(sublime_plugin.TextCommand):
+    """
+    Sublime Text plugin command to open the current .zgeproj file in ZGameEditor.
+    It uses the ZGameEditor.exe with the '/o' flag to open the project for editing.
+    """
+    def is_enabled(self):
+        return is_zgeproj(self.view)
+
+    def run(self, edit):
+        project_path = self.view.file_name()
+
+        # Use the helper function to open the project in the ZGE editor.
+        # We don't need to wait for completion here, as ZGE can open in the background.
+        _run_zge_command(self.view, [project_path])
 
 class ZgeFoldDataCommand(sublime_plugin.TextCommand):
     """
@@ -112,7 +176,7 @@ class ZgeFoldDataCommand(sublime_plugin.TextCommand):
 
 class ZgeAddCodeSpacingCommand(sublime_plugin.TextCommand):
     """
-    Sublime Text 3 command to add specific line spacing and comments
+    Sublime Text command to add specific line spacing and comments
     around CDATA sections within designated XML code tags.
 
     This command targets XML tags such as "BeforeInitExp", "Expression", etc.,
@@ -240,4 +304,3 @@ class ZgeAddCodeSpacingCommand(sublime_plugin.TextCommand):
 
         # Display a success message in the Sublime Text status bar.
         sublime.status_message("Code spacing standardized and comments preserved successfully!")
-
