@@ -204,8 +204,11 @@ class ZgeAddCodeSpacingCommand(sublime_plugin.TextCommand):
         code_tags = [
             "BeforeInitExp",
             "Expression",
+            "FragmentShaderSource",
+            "GeometryShaderSource",
             "OnEmitExpression",
             "Source",
+            "VertexShaderSource",
             "WhileExp"
         ]
 
