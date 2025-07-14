@@ -190,6 +190,8 @@ class ZgeAddCodeSpacingCommand(sublime_plugin.TextCommand):
     CDATA content, then adds the standardized required prefix and suffix.
     User-defined comments beginning or ending with "//" will be preserved.
     """
+    def is_enabled(self):
+        return is_zgeproj(self.view)
 
     def run(self, edit):
         """
